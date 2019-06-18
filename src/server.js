@@ -3,8 +3,8 @@ const path = require('path');
 
 const { BotFrameworkAdapter, MemoryStorage, ConversationState, UserState } = require('botbuilder');
 
-const { dialogBot } = require('./bots/dialogBot');
-const { stateBot } = require('./bots/stateBot');
+const { welcomeBot } = require('./bots/welcomeBot');
+const { MainDialog } = require('./dialogs/mainDialog');
 
 const ENV_FILE = path.join(__dirname, '.env');
 require('dotenv').config({ path: ENV_FILE });
@@ -24,7 +24,10 @@ const memoryStorage = new MemoryStorage();
 const conversationState = new ConversationState(memoryStorage);
 const userState = new UserState(memoryStorage);
 
-const bot = new stateBot(conversationState, userState);
+const logger = console;
+
+const dialog = new MainDialog(logger);
+const bot = new welcomeBot(conversationState, userState, dialog, logger);
 
 adapter.onTurnError = async (context, error) => {
 	console.error(`\n [onTurnError]: ${error}`);

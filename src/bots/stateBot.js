@@ -13,16 +13,6 @@ class stateBot extends ActivityHandler {
 		this.conversationState = conversationState;
 		this.userState = userState;
 
-		this.onMembersAdded(async (turnContext, next) => {
-			for (let idx in turnContext.activity.membersAdded) {
-				if (turnContext.activity.membersAdded[idx].id !== turnContext.activity.recipient.id) {
-					await turnContext.sendActivity('Olá usuario, seja bem vindo!');
-				}
-			}
-
-			await next();
-		});
-
 		this.onMessage(async (turnContext, next) => {
 			const userProfile = await this.userProfile.get(turnContext, {});
 			const conversationData = await this.conversationData.get(turnContext, { promptedForUserName: false });

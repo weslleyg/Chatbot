@@ -1,70 +1,38 @@
-const { ActivityHandler, CardFactory, ActionTypes, MessageFactory } = require('botbuilder');
+const { ActivityHandler } = require('botbuilder');
 
-class dialogBot extends ActivityHandler {
-	constructor() {
+class DialogBot extends ActivityHandler {
+	constructor(conversationState, userState, dialog, logger) {
 		super();
+		if (!conversationState)
+			throw new Error('[DialogBot]: Parâmetro não encontrado. conversationState é requerido!');
+		if (!userState) throw new Error('[DialogBot]: Parâmetro não encontrado. userState é requerido!');
+		if (!dialog) throw new Error('[DialogBot]: Parâmetro não encontrado. dialog é requerido!');
+		if (!logger) {
+			logger = console;
+			logger.log('[DialogBot]: logger não esta setado, console sera setado como default');
+		}
 
-		this.onMessage(async (context) => {
-			switch (context.activity.text) {
-				case '!help':
-					await this.cardTeste(context);
-					break;
-				case '!comandos':
-					await this.comandoTeste(context);
-					break;
-				case '!github':
-					await context.sendActivity('https://github.com/weslleyg');
-					break;
-				default:
-					await context.sendActivity('!comandos para ver os comandos');
-			}
+		this.conversationState = conversationState;
+		this.userState = userState;
+		this.dialog = dialog;
+		this.logger = logger;
+		this.dialogState = this.conversationState.createProperty('DialogState');
+
+		this.onMessage(async (context, next) => {
+			this.logger.log('Dialogo rolando com Message Activity');
+
+            await this.dialog.run(context, this.dialogState);
+
+			await next();
 		});
 
-		this.onMembersAdded(async (context, next) => {
-			for (let idx in context.activity.membersAdded) {
-				if (context.activity.membersAdded[idx].id !== context.activity.recipient.id) {
-					await context.sendActivity(`Bem vindo ${context.activity.from.name}`);
-					await context.sendActivity(`Se tiver alguma duvida digite o comando !help.`);
-				}
-			}
+		this.onDialog(async (context, next) => {
+			await this.conversationState.saveChanges(context, false);
+			await this.userState.saveChanges(context, false);
 
 			await next();
 		});
 	}
-
-	async cardTeste(context) {
-		const card = CardFactory.heroCard(
-			'Está com alguma duvida?',
-			'Acesse os links para mais detalhes do framework',
-			[ 'https://aka.ms/bf-welcome-card-image' ],
-			[
-				{
-					type: ActionTypes.OpenUrl,
-					title: 'Documentação',
-					value: 'https://docs.microsoft.com/en-us/azure/bot-service/?view=azure-bot-service-4.0'
-				},
-				{
-					type: ActionTypes.OpenUrl,
-					title: 'Faça uma pergunta',
-					value: 'https://stackoverflow.com/questions/tagged/botframework'
-				},
-				{
-					type: ActionTypes.OpenUrl,
-					title: 'Publicar bot',
-					value:
-						'https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-howto-deploy-azure?view=azure-bot-service-4.0'
-				}
-			]
-		);
-
-		await context.sendActivity({ attachments: [ card ] });
-	}
-
-	async comandoTeste(context) {
-		const reply = MessageFactory.suggestedActions([ '!help', '!comandos', '!github' ]);
-
-		await context.sendActivity(reply);
-	}
 }
 
-module.exports.dialogBot = dialogBot;
+module.exports.DialogBot = DialogBot;
