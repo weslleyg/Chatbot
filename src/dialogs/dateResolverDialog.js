@@ -48,7 +48,7 @@ class DateResolverDialog extends CancelAndHelpDialog {
 		if (promptContext.recognized.succeeded) {
 			const timex = promptContext.recognized.value[0].timex.split('T')[0];
 
-			return new TimexProperty(timex).typer.has('definite');
+			return new TimexProperty(timex).types.has('definite');
 		} else {
 			return false;
 		}
