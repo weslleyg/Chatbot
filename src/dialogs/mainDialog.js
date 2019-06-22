@@ -1,6 +1,9 @@
+const { TimexProperty } = require('@microsoft/recognizers-text-data-types-timex-expression');
 const { ComponentDialog, DialogSet, TextPrompt, DialogTurnStatus, WaterfallDialog } = require('botbuilder-dialogs');
+const { BookingDialog } = require('./bookingDialog');
 
 const MAIN_WATERFALL_DIALOG = 'mainWaterfallDialog';
+const BOOKING_DIALOG = 'bookingDialog';
 
 class MainDialog extends ComponentDialog {
 	constructor(logger) {
@@ -13,13 +16,15 @@ class MainDialog extends ComponentDialog {
 
 		this.logger = logger;
 
-		this.addDialog(new TextPrompt('TextPrompt')).addDialog(
-			new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
-				this.introStep.bind(this),
-				this.actStep.bind(this),
-				this.finalStep.bind(this)
-			])
-		);
+		this.addDialog(new TextPrompt('TextPrompt'))
+			.addDialog(new BookingDialog(BOOKING_DIALOG))
+			.addDialog(
+				new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
+					this.introStep.bind(this),
+					this.actStep.bind(this),
+					this.finalStep.bind(this)
+				])
+			);
 
 		this.initialDialogId = MAIN_WATERFALL_DIALOG;
 	}
@@ -41,11 +46,23 @@ class MainDialog extends ComponentDialog {
 	}
 
 	async actStep(step) {
-		return await step.prompt('TextPrompt', { prompt: `Prazer em conhecer-te ${step.context.activity.text}` });
+		let bookingDetails = {};
+
+		return await step.beginDialog('bookingDialog', bookingDetails);
 	}
 
 	async finalStep(step) {
-		await step.context.sendActivity('Obrigado!');
+		if (step.result) {
+			const result = step.result;
+
+			const timeProperty = new TimexProperty(result.travelDate);
+			const travelDateMsg = timeProperty.toNaturalLanguage(new Date(Date.now()));
+			const msg = `I have you booked to ${result.destination} from ${result.origin} on ${travelDateMsg}.`;
+
+			await step.context.sendActivity(msg);
+		} else {
+			await step.context.sendActivity('Thank you');
+		}
 
 		return await step.endDialog();
 	}
