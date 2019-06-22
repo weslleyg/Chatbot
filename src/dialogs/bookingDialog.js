@@ -32,7 +32,9 @@ class BookingDialog extends CancelAndHelpDialog {
 		const bookingDetails = step.options;
 
 		if (!bookingDetails.destination) {
-			return await step.prompt(TEXT_PROMPT, { prompt: 'Para qual city?' });
+			return await step.prompt(TEXT_PROMPT, {
+				prompt: `Para qual cidade você deseja viajar ${step.context.activity.text}?`
+			});
 		} else {
 			return await step.next(bookingDetails.destination);
 		}
@@ -44,7 +46,7 @@ class BookingDialog extends CancelAndHelpDialog {
 		bookingDetails.destination = step.result;
 
 		if (!bookingDetails.origin) {
-			return await step.prompt(TEXT_PROMPT, { prompt: 'De qual city?' });
+			return await step.prompt(TEXT_PROMPT, { prompt: 'De qual cidade você estará saindo?' });
 		} else {
 			return await step.next(bookingDetails.origin);
 		}
@@ -67,8 +69,7 @@ class BookingDialog extends CancelAndHelpDialog {
 
 		bookingDetails.travelDate = step.result.timex;
 
-		console.log(bookingDetails);
-		const msg = `Confirme, você quer viajar de ${bookingDetails.destination} para: ${bookingDetails.origin} em: ${bookingDetails.travelDate}.`;
+		const msg = `Confirme, você deseja viajar de ${bookingDetails.origin} para ${bookingDetails.destination} em ${bookingDetails.travelDate}.`;
 
 		return await step.prompt(CONFIRM_PROMPT, { prompt: msg });
 	}

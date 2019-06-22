@@ -19,9 +19,8 @@ class DateResolverDialog extends CancelAndHelpDialog {
 	async initialStep(step) {
 		const timex = step.options.date;
 
-		const promptMsg = 'On what date would you like to travel?';
-		const repromtpMsg =
-			"I'm sorry, for best results, please enter you travel date including the month, day and year";
+		const promptMsg = 'Em qual data você gostaria de viajar?';
+		const repromtpMsg = 'Desculpe, para melhores resultados, entre com a data da viajem com mês, dia e ano!';
 
 		if (!timex) {
 			return await step.prompt(DATETIME_PROMPT, {

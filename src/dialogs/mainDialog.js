@@ -57,11 +57,11 @@ class MainDialog extends ComponentDialog {
 
 			const timeProperty = new TimexProperty(result.travelDate);
 			const travelDateMsg = timeProperty.toNaturalLanguage(new Date(Date.now()));
-			const msg = `I have you booked to ${result.destination} from ${result.origin} on ${travelDateMsg}.`;
+			const msg = `Você marcou sua viajem de ${result.origin} para ${result.destination} em ${travelDateMsg}.`;
 
 			await step.context.sendActivity(msg);
 		} else {
-			await step.context.sendActivity('Thank you');
+			await step.context.sendActivity('Obrigado!');
 		}
 
 		return await step.endDialog();
